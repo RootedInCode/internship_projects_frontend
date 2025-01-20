@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RPS</title>
+  <style>
+/* body{
+            width: 300px;
+            height: f;
+            padding: 20px;
+            background-color: white;
+            border: 2px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border-radius: 8px;
+            margin-left: auto;
+            margin-right: auto;  
+            margin-top: 10%;  
+            padding: 3rem;        
+        } */
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: white;
+        }
+
+        #popup , #res , #popup2{
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50% , -50%);
+          background-color: aquamarine;
+          padding: 20px;
+          border: 2px solid #ccc;
+          border-radius: 8px;
+          box-shadow: 0 4ps 8px rgba(0, 0, 0, 0.1);
+          display: none;
+          text-align: center;
+          z-index: 1000;
+        }
+
+        .main-block {
+            width: 300px;
+            height: f;
+            padding: 20px;
+            border: 2px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .img-container {
+            width: 5rem;
+            height: 5rem;
+            cursor: pointer;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid gray;
+            padding: 0.25rem;
+        }
+
+        .img-container img{
+            width: auto;
+            height: 100%;
+            object-fit:fill;
+        }
+
+        .choices {
+            display:flex;
+            flex-direction:column;justify-content:center;align-items:center;
+        }
+
+        button {
+          border: none;
+          vertical-align: middle;
+          padding: 0.5rem;
+          width: 4rem;
+          font-size: 0.8rem;
+          font-weight:lighter;
+          border-radius: 50px;
+          background-color:rgb(56, 220, 241);
+        }
+
+        button:hover {
+          background-color: blue;
+        }
+  </style>
+</head>
+<body>
+  <div id="res">
+    Result
+  </div>
+
+  <div id="popup2">
+    
+  </div>
+
+    <div id="popup">
+    Number of chances?
+    <p></p>
+    <button class="popup-btn" onclick="chances = 5;popup();">
+      5
+    </button>
+    <button class="popup-btn" onclick="chances = 10;popup();">
+      10
+    </button>
+    <button class="popup-btn" onclick="chances = 15;popup();">
+      15
+    </button>
+    <p>OR</p>
+    <form>
+      <p id="warningMessage" class="warning" style="display: none;">Value must be greater than 0!</p>
+    <input type="text" id="inputField" placeholder="Custom:Enter number > 0" style="border-radius: 10px;margin-top:0.1rem;">
+    
+    <p></p>
+    <button id="button-submit">Enter</button>
+    </form>
+    </div>
+
+
+  <div class="main-block" style="background-color:rgb(168, 228, 90);">
+  <h1>Rock-Paper-Scissors</h1>
+  <div style="display: inline-flex;align-items: center;justify-content:space-around;width: 100%;">
+  <div>You:<span id="you">0</span></div> <div>Computer:<span id="computer">0</div>
+  </div>
+  <h3 id="result" style="text-align: center;">Start Game</h3>
+  <div id="play" style="display:flex;flex-direction: row; justify-content:center;align-items: center;gap: 4.5rem;flex-wrap: nowrap;margin-bottom: 2rem;">
+        <!-- <img src="play.png"> -->
+        <div class="img-container"><img id="userplay" src="public/userImg.png" style="padding-left: 2px;"></div>
+        <div class="img-container"><img id="computerplay" src="public/compImg.png"></div>
+    </div>
+    <div style="display:flex;justify-content: center;align-items: center;gap: 3rem;">
+    <div class="choices">
+  <button onClick="
+  userChoice= 'rock';
+  checkWinner();
+  
+  ">
+    Rock
+  </button>
+  </div>
+  <div class="choices">
+  <button onClick="
+  userChoice= 'paper';
+  checkWinner();
+  ">
+    Paper
+  </button>
+  </div>
+  <div class="choices">
+  <button onClick="
+  userChoice= 'scissors';
+  checkWinner();
+
+  ">
+    Scissors
+  </button>
+  </div>
+  </div>
+  <div class="main-block" style="padding:0;margin-top: 10px; background-color:rgb(236, 240, 199);height: fit-content;">
+    <h4>How to Play?</h4>
+    <ul style="text-align: left;list-style:circle;">
+      <li>
+        With buttons:
+        <ul style="text-align: left;list-style:none;">
+        <li> Play using above buttons! </li>
+        </ul>
+      </li>
+
+      <li>
+        With numpad:
+        <ul style="text-align: left;list-style:none;">
+        <li> Press 1 for rock.</li>
+        <li> Press 2 for paper.</li>
+        <li> Press 3 for scissors.</li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+  </div>
+  <script>
+
+let score = JSON.parse(localStorage.getItem('score')) || { userScore: 0 , computerScore : 0};
+    let computerChoice = '' ;
+    let userChoice = 5 ;
+    let chances = 0;
+    let popupActive = false;
+    const playDivOG = document.getElementById("play");
+    // const ogres = document.getElementById('popup').innerHTML;
+    function reset() {
+      chances = 0;
+      showImg('uimg' , 'cimg');
+    document.getElementById("popup").style.display = 'block';
+    localStorage.removeItem('score');
+    // localStorage.setItem('score' , JSON.stringify({userScore:0 , computerScore:0}));
+    score = JSON.parse(localStorage.getItem('score')) || { userScore: 0 , computerScore : 0};
+    document.getElementById("you").innerHTML = score.userScore;
+      document.getElementById("computer").innerHTML = score.computerScore;
+    popup();
+    }
+    //on loading show popup for no of chances
+    document.addEventListener('DOMContentLoaded', () => {
+    popup();
+  });
+
+    function popup() {
+      const popup = document.getElementById("popup");
+            popup.style.display = "block";
+            popupActive = true;
+            disableButtons(true);
+            const submitButton = document.getElementById("button-submit");
+      const inputField = document.getElementById("inputField");
+
+    if(chances > 0) {
+      popupUpdate();
+      popup.style.display = "none";
+    } else {
+      popup.style.display = "block";
+      submitButton.addEventListener("click", (e) => {
+          e.preventDefault();
+          chances = inputField.value;
+          console.log("Input value:", chances);
+          
+          popupUpdate();
+
+          setTimeout(() => {
+        document.getElementById('popup').style.display = 'none';
+        inputField.value = '';
+        popupActive = false;
+        disableButtons(false); //on the buttons
+    }, 1000);
+      });
+
+    }
+  }
+    function popupUpdate() {
+      const popup2 = document.getElementById('popup2');
+      popup2.innerHTML=`Best of ${chances}`;
+      popup2.style.display = 'block';
+    setTimeout(() => {
+    popup2.innerHTML = 'Start!';
+    setTimeout(() => {
+        popup2.style.display = 'none';
+        popupActive = false;
+      disableButtons(false);
+    }, 1500);
+}, 1000);
+    }
+
+    const inputValue = document.getElementById('inputField');
+  const warningMessage = document.getElementById('warningMessage');
+const button = document.getElementById('button-submit');
+  // Event listener to monitor the input value as the user types
+  inputValue.addEventListener('input', function() {
+    // Check if the value is less than or equal to 0
+    if (parseFloat(inputValue.value) <= 0) {
+      // Show the warning message
+      warningMessage.style.display = 'inline';
+    button.disabled = 1;  // Disable or enable button
+    button.style.opacity = 1 ? 0.5 : 1;
+    } else {
+      // Hide the warning message when input is valid
+      button.disabled = 0;
+      button.style.opacity = 1;
+      warningMessage.style.display = 'none';
+    }
+  });
+
+
+    function showResult(userScore,computerScore) {
+      popupActive = true;
+      disableButtons(true);
+      const res = document.getElementById('res');
+      res.style.display = 'block';
+      if(score.userScore > score.computerScore) {
+        res.innerText = 'You won!';
+      } else if(score.computerScore > score.userScore) {
+        res.innerText = `You lose :(`;
+      } else {
+        res.innerText = "It's a tie!";
+       }
+      
+       const playAgainButton = document.createElement('button');
+    playAgainButton.innerText = 'Play again?';
+    playAgainButton.onclick = function() {
+        // console.log('Play again');
+        // res.style.display = 'none';
+    reset();
+    res.style.display = 'none';
+    };
+
+    // Create an "Exit" button
+    const exitButton = document.createElement('button');
+    exitButton.innerText = 'Exit';
+    exitButton.onclick = function() {
+        // Add logic to exit the game or close the app
+    reset();
+        res.style.display = 'none'; // Hide the result popup
+    };
+
+    // Append buttons to the popup
+    res.appendChild(playAgainButton);
+    res.appendChild(exitButton);
+    // res.innerHTML = ogres.innerHTML;
+    }
+    function randomNumber() {
+      const choice = Math.floor(3 * (Math.random()) + 1);
+      if(choice === 1) {
+        computerChoice = 'rock';
+      } else if(choice === 2) {
+        computerChoice = 'paper';
+      } else {
+        computerChoice = 'scissors';
+      }
+      console.log(computerChoice)
+      return computerChoice;
+    }
+    function showMessage(string) {
+      document.getElementById("result").innerHTML = string;
+      
+      setTimeout(() => {
+                document.getElementById("result").innerHTML = 'Play';
+            }, 1000);
+    }
+    function getSrc(ch) {
+      if(ch === 'paper') { src = 'public/paper.png';}
+      else if(ch === 'rock') { src = 'public/rock.png';}
+      else if(ch === 'scissors'){src = 'public/scissors.png';}
+      else if(ch === 'uimg') {
+        src = 'public/userImg.png';
+      } else if(ch === 'cimg') {
+        src = 'public/compImg.png';
+      }
+      return src;
+    }
+    function showImg(userch,compch) {
+      let usersrc = getSrc(userch);
+      let compsrc = getSrc(compch);
+      //change size
+      const containers = document.getElementsByClassName('img-container');
+for (let container of containers) {
+    container.style.width = '5.6rem';
+}
+      document.getElementById("userplay").src = usersrc;
+      document.getElementById("computerplay").src = compsrc;
+    }
+    function checkWinner() {
+      if(chances <= 0) {
+        return;
+      }
+      //generate computer choice
+      let computerChoice1 = randomNumber();
+      //throw images
+      showImg(userChoice,computerChoice1);
+      //display result msg
+      if(computerChoice1 === userChoice) {
+          showMessage(`It's a tie!`);
+      } else {
+        if((computerChoice1 === 'paper' && userChoice ==='scissors') || (computerChoice1 === 'scissors' && userChoice ==='rock') || (computerChoice1 === 'rock' && userChoice ==='paper')) {
+          showMessage(`You win! ${userChoice} beats ${computerChoice1}`);
+          score.userScore++;
+        } else if((userChoice === 'paper' && computerChoice1==='scissors') || (userChoice === 'scissors' && computerChoice1 ==='rock') || (userChoice === 'rock' && computerChoice1 ==='paper')) {
+          showMessage(`You lose :( ${computerChoice1} beats ${userChoice}`);
+          score.computerScore++;
+        }
+      }
+      document.getElementById("you").innerHTML = score.userScore;
+      document.getElementById("computer").innerHTML = score.computerScore;
+      if(chances === 1) {
+        showResult(score.userScore,score.computerScore);
+      }else if(chances <= 0) {
+        disableButtons(true);
+      } else {
+        chances--;
+        console.log(chances);
+      }
+    }
+
+    function disableButtons(disable) {
+  const buttons = document.querySelectorAll('.choices button');
+  buttons.forEach(button => {
+    button.disabled = disable;  // Disable or enable button
+    button.style.opacity = disable ? 0.5 : 1;  // Optional: change button appearance
+  });
+}
+
+
+    document.addEventListener('keydown', (event) => {
+      if (popupActive || chances <= 0 ) {
+    return;  // Do nothing if popup is active
+  }
+            if (event.key === '1') {
+                userChoice= 'rock'; // Rock
+                checkWinner();
+            } else if (event.key === '2') {
+                userChoice = 'paper' // Paper
+                checkWinner();
+            } else if (event.key === '3') {
+                userChoice = 'scissors' // Scissors
+                checkWinner();
+            } else {
+              
+            }
+            
+        });
+  </script>
+</body>
+</html>
